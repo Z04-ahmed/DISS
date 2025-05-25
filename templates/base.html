@@ -1,0 +1,56 @@
+<!-- base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>{% block title %}Klozit{% endblock %}</title>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <h1 class="logo">KLOZIT</h1>
+            <div class="nav-links">
+                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a>
+                <a href="{% url 'product_list' %}" class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}">SHOP</a>
+                <a href="{% url 'boards' %}" class="nav-link {% if request.resolver_match.url_name == 'boards' %}active{% endif %}">BOARDS</a>
+                <a href="{% url 'favourites' %}" class="nav-link {% if request.resolver_match.url_name == 'favourites' %}active{% endif %}">FAVOURITES</a>
+{#                <a href="{% url 'cart' %}" class="nav-link {% if request.resolver_match.url_name == 'cart' %}active{% endif %}">CART</a>#}
+                <!-- Profile Link -->
+                <a href="{% if user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}?next={{ request.path }}{% endif %}"
+                   class="nav-link profile-link">
+                    <i class="fas fa-user"></i>
+                    {% if user.is_authenticated %}PROFILE{% else %}SIGN IN{% endif %}
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Block -->
+    <main>
+        {% block content %}
+        <!-- Child templates will override this block -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer class="main-footer">
+    <p>&copy; 2025 Klozit. All rights reserved.
+        <a href="{% if user.is_authenticated %}{% url 'brand_dashboard' %}{% else %}{% url 'brand_rep_login' %}?next={{ request.path }}{% endif %}" class="footer-login-link">
+            {% if user.is_authenticated %}Brand Dashboard{% else %}Sign In as brand{% endif %}
+        </a>
+    </p>
+</footer>
+
+    <!-- Optional JavaScript Block -->
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>
+</html>

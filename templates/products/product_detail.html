@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="product-detail-container">
+    <!-- Product Header -->
+    <div class="product-header">
+        <h1 class="product-title">{{ product.title }}</h1>
+        <div class="product-id-container">
+            <span class="product-id-label">Product ID:</span>
+            <div class="product-id-wrapper">
+                <input type="text" id="productId" value="{{ product.id }}" readonly class="product-id-input">
+                <button onclick="copyProductId()" class="copy-id-btn">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Content -->
+    <div class="product-content">
+        <!-- Product Image -->
+        <div class="product-image-container">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+            {% else %}
+            <div class="product-image-placeholder">
+                <i class="fas fa-image"></i>
+                <span>No image available</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Details -->
+        <div class="product-details">
+            <div class="price-section">
+                <span class="price-label">Price:</span>
+                <span class="price-value">₦{{ product.price }}</span>
+            </div>
+
+            <div class="description-section">
+                <h3 class="section-title">Description</h3>
+                <p class="product-description">{{ product.description|linebreaksbr }}</p>
+            </div>
+
+            <!-- Add to Board Section -->
+            <div class="add-to-board-section">
+                <h3 class="section-title">Save to Board</h3>
+                <form method="post" action="{% url 'add_product_to_board' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <div class="form-group">
+                        <select name="board_id" required class="board-select">
+                            <option value="">Select a board</option>
+                            {% for board in boards %}
+                            <option value="{{ board.id }}">{{ board.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="add-to-board-btn">
+                            <i class="fas fa-plus"></i> Add to Board
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyProductId() {
+    const productIdInput = document.getElementById('productId');
+    productIdInput.select();
+    document.execCommand('copy');
+
+    // Show feedback
+    const copyBtn = document.querySelector('.copy-id-btn');
+    const originalText = copyBtn.innerHTML;
+    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+
+    // Reset button text after 2 seconds
+    setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+    }, 2000);
+}
+</script>
+
+<style>
+/* Product Detail Styles */
+.product-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.product-header {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product-title {
+    font-size: 2.2rem;
+    color: #333;
+    margin: 0;
+}
+
+.product-id-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.product-id-label {
+    font-weight: 600;
+    color: #555;
+}
+
+.product-id-wrapper {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.product-id-input {
+    padding: 8px 12px;
+    border: none;
+    background: #f9f9f9;
+    min-width: 100px;
+    font-family: monospace;
+}
+
+.copy-id-btn {
+    padding: 8px 15px;
+    background: #f0f0f0;
+    border: none;
+    border-left: 1px solid #ddd;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.copy-id-btn:hover {
+    background: #e0e0e0;
+}
+
+.product-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.product-image-container {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.product-image-placeholder {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 1.2rem;
+}
+
+.product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.price-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.price-label {
+    font-weight: 600;
+    margin-right: 10px;
+    color: #555;
+}
+
+.price-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e53935;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    color: #444;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.product-description {
+    line-height: 1.6;
+    color: #555;
+}
+
+.add-to-board-section {
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    gap: 10px;
+}
+
+.board-select {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.add-to-board-btn {
+    padding: 10px 20px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.add-to-board-btn:hover {
+    background: #1565c0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .product-content {
+        grid-template-columns: 1fr;
+    }
+
+    .product-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-group {
+        flex-direction: column;
+    }
+
+    .board-select, .add-to-board-btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

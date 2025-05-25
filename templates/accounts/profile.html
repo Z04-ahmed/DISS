@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-info">
+            <h1>{{ profile_user.full_name }}</h1>
+            <p class="email">{{ profile_user.email }}</p>
+            <p class="user-type">
+                Account Type: {{ profile_user.get_user_type_display }}
+            </p>
+
+            <a href="{% url 'edit_profile' %}" class="edit-profile-btn">
+                <i class="fas fa-edit"></i> Edit Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="profile-details">
+        {% if profile_user.user_type == 'BRAND_REPRESENTATIVE' %}
+        <div class="brand-section">
+            <h3>Brand Representative Details</h3>
+            <p>Special brand-related features will appear here</p>
+        </div>
+        {% elif profile_user.user_type == 'CUSTOMER' %}
+        <div class="customer-section">
+            <h3>Customer Profile</h3>
+            <p>Customer-specific content goes here</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}

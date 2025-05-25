@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="board-form-container">
+    <div class="board-form-card">
+        <h2>Create New Board</h2>
+        {% if error %}
+        <div class="alert alert-error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" class="board-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="board-name">Board Name*</label>
+                <input type="text" id="board-name" name="name" required placeholder="Enter board name">
+            </div>
+
+            <div class="form-group">
+                <label for="board-description">Description</label>
+                <textarea id="board-description" name="description" rows="3" placeholder="What's this board about?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="cover-image">Cover Image</label>
+                <div class="cover-preview">
+                    <img id="cover-preview" style="display: none;">
+                    <div class="upload-area">
+                        <label for="cover-image" class="upload-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Click to upload</span>
+                        </label>
+                        <input type="file" id="cover-image" name="cover_image" accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Visibility</label>
+                <div class="visibility-options">
+                    <label>
+                        <input type="radio" name="visibility" value="public" checked>
+                        <span class="radio-label">Public</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="visibility" value="private">
+                        <span class="radio-label">Private</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Create Board</button>
+                <a href="{% url 'boards' %}" class="cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+    {% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cover image preview
+    const coverImageInput = document.getElementById('cover-image');
+    const coverPreview = document.getElementById('cover-preview');
+
+    if (coverImageInput && coverPreview) {
+        coverImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    coverPreview.src = e.target.result;
+                    coverPreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

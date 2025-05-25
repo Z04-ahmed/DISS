@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Brand Portal | Klozit{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/brand-auth.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-primary: #3a0ca3;
+            --brand-secondary: #7209b7;
+        }
+    </style>
+</head>
+<body>
+    <div class="brand-auth-container">
+        <!-- Left Branding Panel -->
+        <div class="brand-auth-hero">
+            <div class="brand-auth-logo">
+                <i class="fas fa-crown"></i>
+                <h1>Brand Portal</h1>
+            </div>
+            <div class="brand-auth-benefits">
+                <h3>Manage Your Brand on Klozit</h3>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Add and update products</li>
+                    <li><i class="fas fa-chart-line"></i> Track performance analytics</li>
+                    <li><i class="fas fa-users"></i> Connect with your customers</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="brand-auth-form-container">
+            <div class="brand-auth-form-wrapper">
+                {% if messages %}
+                <div class="brand-auth-messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block brand_auth_content %}
+                <!-- Authentication forms will go here -->
+                {% endblock %}
+
+                <div class="brand-auth-footer">
+                    {% block brand_auth_switch %}
+                    {% if 'login' in request.path %}
+                    <p>New to Klozit Brand Portal? <a href="{% url 'brand_rep_signup' %}">Create account</a></p>
+                    {% else %}
+                    <p>Already have an account? <a href="{% url 'brand_rep_login' %}">Sign in</a></p>
+                    {% endif %}
+                    {% endblock %}
+                    <p class="back-to-main"><a href="{% url 'home' %}"><i class="fas fa-arrow-left"></i> Back to main site</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

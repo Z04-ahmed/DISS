@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="boards-container">
+    <div class="boards-header">
+        <h1>Your Boards</h1>
+        <a href="{% url 'create_board' %}" class="create-board-btn">
+            <i class="fas fa-plus"></i> Create New Board
+        </a>
+    </div>
+
+    {% if boards %}
+    <div class="boards-grid">
+        {% for board in boards %}
+        <div class="board-card" data-board-id="{{ board.id }}">
+            <a href="{% url 'board_detail' board.id %}">
+                {% if board.cover_image %}
+                <img src="{{ board.cover_image.url }}" alt="{{ board.name }}" class="board-cover">
+                {% else %}
+                <div class="board-cover placeholder">
+                    <i class="fas fa-clipboard"></i>
+                </div>
+                {% endif %}
+                <div class="board-info">
+                    <h3>{{ board.name }}</h3>
+                    <p class="pin-count"><i class="fas fa-thumbtack"></i> {{ board.pins.count }} Pins</p>
+                </div>
+            </a>
+            <button class="delete-board-btn" data-board-id="{{ board.id }}">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>You don't have any boards yet</h3>
+        <p>Organize your saved items by creating boards</p>
+        <a href="{% url 'create_board' %}" class="create-board-btn primary">
+            <i class="fas fa-plus"></i> Create Your First Board
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Delete board functionality
+    document.querySelectorAll('.delete-board-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const boardId = this.getAttribute('data-board-id');
+
+            if (confirm('Are you sure you want to delete this board?')) {
+                fetch(`/boards/${boardId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.querySelector(`.board-card[data-board-id="${boardId}"]`).remove();
+                        // Update empty state if no boards left
+                        if (document.querySelectorAll('.board-card').length === 0) {
+                            document.querySelector('.boards-grid').innerHTML = `
+                                <div class="empty-state">
+                                    <h3>You don't have any boards yet</h3>
+                                    <p>Organize your saved items by creating boards</p>
+                                    <a href="{% url 'create_board' %}" class="create-board-btn primary">
+                                        <i class="fas fa-plus"></i> Create Your First Board
+                                    </a>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        alert('Error deleting board');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting board');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

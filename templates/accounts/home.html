@@ -1,0 +1,441 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h2 class="hero-subtitle">Your One-Stop Shop</h2>
+        <h1 class="hero-title">For All Your Fashion Needs</h1>
+    </div>
+    <div class="search-container">
+        <form method="GET" action="{% url 'home' %}">
+            <input type="text" name="q" placeholder="Search products..." class="search-input" value="{{ search_query|default:'' }}">
+            <button type="submit" class="search-button">
+                <img src="{% static 'icons/search.svg' %}" alt="Search">
+            </button>
+        </form>
+
+        {% if recent_searches %}
+        <div class="recent-searches">
+            <h3>Recent Searches</h3>
+            <ul>
+                {% for search in recent_searches %}
+                    <li><a href="?q={{ search.query }}">{{ search.query }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="content-container">
+    <!-- Recommended Products -->
+    {% if recommendations %}
+    <section class="recommendations-section">
+        <h2 class="section-title">Recommended For You</h2>
+        <div class="product-grid">
+            {% for product in recommendations %}
+            <article class="product-card">
+                <a href="{% url 'product_detail' product.id %}" class="product-link" onclick="recordView({{ product.id }})">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                    {% else %}
+                    <div class="image-placeholder">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    {% endif %}
+                    <div class="product-info">
+                        <h3 class="product-title">{{ product.title }}</h3>
+                        <p class="product-price">${{ product.price }}</p>
+                    </div>
+                </a>
+                {% if product.id in saved_product_ids %}
+                    <button class="save-btn saved" data-product-id="{{ product.id }}">
+                        <i class="fas fa-heart"></i> Saved
+                    </button>
+                {% else %}
+                    <button class="save-btn unsaved" data-product-id="{{ product.id }}">
+                        <i class="far fa-heart"></i> Save
+                    </button>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Categories Grid -->
+    <section class="categories-section">
+        <h2 class="section-title">Shop by Category</h2>
+        <div class="categories-grid">
+            {% for category in categories %}
+                <a href="?category={{ category.name }}" class="category-card">
+                    <div class="category-content">
+                        <h3 class="category-title">{{ category.name }}</h3>
+                        <p class="category-count">{{ category.product_count }} items</p>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Best Sellers Section -->
+    <section class="bestsellers-section">
+        <h2 class="section-title">BESTSELLERS</h2>
+        <div class="product-grid">
+            {% for product in trending_products %}
+                <article class="product-card">
+                    <a href="{% url 'product_detail' product.id %}" class="product-link" onclick="recordView({{ product.id }})">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                        {% else %}
+                        <div class="image-placeholder">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        {% endif %}
+                        <div class="product-info">
+                            <h3 class="product-title">{{ product.title }}</h3>
+                            <p class="product-price">${{ product.price }}</p>
+                        </div>
+                    </a>
+                    {% if product.id in saved_product_ids %}
+                        <button class="save-btn saved" data-product-id="{{ product.id }}">
+                            <i class="fas fa-heart"></i> Saved
+                        </button>
+                    {% else %}
+                        <button class="save-btn unsaved" data-product-id="{{ product.id }}">
+                            <i class="far fa-heart"></i> Save
+                        </button>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- All Products Section -->
+    <section class="all-products-section">
+        <h2 class="section-title">All Products</h2>
+        <div class="product-grid">
+            {% for product in all_products %}
+                <article class="product-card">
+                    <a href="{% url 'product_detail' product.id %}" class="product-link" onclick="recordView({{ product.id }})">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                        {% else %}
+                        <div class="image-placeholder">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        {% endif %}
+                        <div class="product-info">
+                            <h3 class="product-title">{{ product.title }}</h3>
+                            <p class="product-price">${{ product.price }}</p>
+                        </div>
+                    </a>
+                    {% if product.id in saved_product_ids %}
+                        <button class="save-btn saved" data-product-id="{{ product.id }}">
+                            <i class="fas fa-heart"></i> Saved
+                        </button>
+                    {% else %}
+                        <button class="save-btn unsaved" data-product-id="{{ product.id }}">
+                            <i class="far fa-heart"></i> Save
+                        </button>
+                    {% endif %}
+                </article>
+            {% empty %}
+                <p class="no-products">No products found{% if search_query %} matching "{{ search_query }}"{% endif %}.</p>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Save/Unsave functionality
+    document.querySelectorAll('.save-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            const url = `/product/toggle-save/${productId}/`;
+
+            // Visual feedback
+            this.disabled = true;
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Toggle between saved/unsaved states
+                    if (data.action === 'saved') {
+                        this.innerHTML = '<i class="fas fa-heart"></i> Saved';
+                        this.classList.add('saved');
+                        this.classList.remove('unsaved');
+                    } else {
+                        this.innerHTML = '<i class="far fa-heart"></i> Save';
+                        this.classList.add('unsaved');
+                        this.classList.remove('saved');
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                this.disabled = false;
+            });
+        });
+    });
+});
+
+function recordView(productId) {
+    if ("{{ request.user.is_authenticated|yesno:"true,false" }}" === "true") {
+        fetch(`/record-view/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => console.error('Error recording view:', error));
+    }
+}
+</script>
+
+<style>
+    /* Base Styles */
+    .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{% static "images/hero-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 30px;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .search-button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    /* Recent Searches */
+    .recent-searches {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 0 0 10px 10px;
+        padding: 10px 20px;
+        margin-top: -5px;
+    }
+
+    .recent-searches h3 {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .recent-searches ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .recent-searches li a {
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9rem;
+        padding: 3px 8px;
+        background: #f0f0f0;
+        border-radius: 12px;
+    }
+
+    /* Sections */
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+
+    .content-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Categories */
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .category-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #333;
+        border: 1px solid #e0e0e0;
+    }
+
+    .category-card:hover {
+        background-color: #e9ecef;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .category-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .category-title {
+        margin: 0 0 5px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .category-count {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    /* Product Grid */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
+    }
+
+    .product-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .image-placeholder {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        color: #ccc;
+    }
+
+    .product-info {
+        padding: 15px;
+    }
+
+    .product-title {
+        margin: 0 0 5px 0;
+        font-size: 1rem;
+    }
+
+    .product-price {
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+
+    /* Save Button */
+    .save-btn {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #ddd;
+    }
+
+    .save-btn.saved {
+        background-color: #ff6b6b;
+        color: white;
+        border-color: #ff6b6b;
+    }
+
+    .save-btn.unsaved {
+        background-color: white;
+        color: #666;
+    }
+
+    /* No Products Message */
+    .no-products {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px 0;
+        color: #666;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .product-grid, .categories-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+{% endblock %}

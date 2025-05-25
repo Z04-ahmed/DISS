@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Brand Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/brandrep.css' %}">
+</head>
+<body>
+    {% if user.is_authenticated and user.user_type == 'BRAND_REPRESENTATIVE' %}
+    <nav class="brand-nav">
+        <div class="brand-logo">
+            <h1>{{ user.brandrepresentative.brand.name }}</h1>
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'brand_dashboard' %}">Dashboard</a>
+            <a href="{% url 'add_product' %}">Add Product</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="brand-footer">
+        <p>{{ user.brandrepresentative.brand.name }} &copy; {% now "Y" %}</p>
+    </footer>
+    {% else %}
+    <div class="access-denied">
+        <h2>Access Denied</h2>
+        <p>You must be logged in as a brand representative to view this page.</p>
+        <a href="{% url 'brand_rep_login' %}?next={{ request.path }}">Login</a>
+    </div>
+    {% endif %}
+</body>
+</html>

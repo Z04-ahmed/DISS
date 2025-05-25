@@ -1,0 +1,37 @@
+{% extends "brandrep/brand_auth_base.html" %}
+
+{% block brand_auth_content %}
+<div class="brand-auth-form">
+    <h2>Brand Representative Login</h2>
+
+    {% if messages %}
+    <div class="auth-messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'brand_rep_login' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn-auth">Login</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block brand_auth_switch %}
+<p>Don't have an account? <a href="{% url 'brand_rep_signup' %}">Sign up</a></p>
+{% endblock %}

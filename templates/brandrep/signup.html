@@ -1,0 +1,60 @@
+{% extends "brandrep/brand_auth_base.html" %}
+
+{% block brand_auth_content %}
+<div class="brand-auth-form">
+    <h2>Brand Representative Registration</h2>
+
+    {% if messages %}
+    <div class="auth-messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <h3>Your Information</h3>
+        <div class="form-group">
+            <label for="email">Email*</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password*</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <div class="form-group">
+            <label for="full_name">Full Name*</label>
+            <input type="text" id="full_name" name="full_name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="phone_number">Phone Number*</label>
+            <input type="text" id="phone_number" name="phone_number" required>
+        </div>
+
+        <h3>Brand Information</h3>
+        <div class="form-group">
+            <label for="brand_name">Brand Name*</label>
+            <input type="text" id="brand_name" name="brand_name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="website">Website</label>
+            <input type="url" id="website" name="website">
+        </div>
+
+        <div class="form-group">
+            <label for="logo">Logo</label>
+            <input type="file" id="logo" name="logo" accept="image/*">
+        </div>
+
+        <button type="submit" class="btn-auth">Register</button>
+    </form>
+</div>
+{% endblock %}

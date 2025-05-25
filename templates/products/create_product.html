@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Product</title>
+</head>
+<body>
+    <h1>Add New Product</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Title:</label>
+        <input type="text" name="title" required><br>
+
+        <label>Description:</label>
+        <textarea name="description" required></textarea><br>
+
+        <label>Price:</label>
+        <input type="number" name="price" step="0.01" required><br>
+
+        <label>Category:</label>
+        <select name="category">
+            <option value="">Select a category</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Image:</label>
+        <input type="file" name="image" required><br>
+
+        <button type="submit">Create</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!-- login.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">WELCOME BACK!</h2>
+        <p class="auth-subtitle">Please sign in to continue</p>
+{% if error %}
+  <p class="error">{{ error }}</p>
+{% endif %}
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Email or Username</label>
+                <input name="email" type="text" placeholder="Enter your email/username" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input name="password" type="password" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="auth-button">LOG IN</button>
+
+            <div class="auth-switch">
+                Don't have an account?
+                <a href="{% url 'signup' %}">SIGN UP</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

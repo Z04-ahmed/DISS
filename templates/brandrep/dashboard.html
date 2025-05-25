@@ -1,0 +1,39 @@
+{% extends 'brandrep/base.html' %}
+
+{% block content %}
+<div class="brand-dashboard">
+    <h1>{{ brand.name }} Dashboard</h1>
+
+    <div class="products-list">
+        <h2>Your Products</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Wishlisted</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        <img src="{{ product.image.url }}" width="50">
+                        {{ product.title }}
+                    </td>
+                    <td>${{ product.price }}</td>
+                    <td>{{ product.wishlist_count }} users</td>
+                    <td>{{ product.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No products yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

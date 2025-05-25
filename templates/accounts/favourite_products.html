@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="wishlist-container">
+    <div class="wishlist-header">
+        <h1>My Wishlist</h1>
+        <p class="wishlist-count">{{ favourite_products.count }} items</p>
+    </div>
+
+    {% if favourite_products %}
+    <div class="products-grid">
+        {% for product in favourite_products %}
+        <div class="product-card">
+            <a href="{% url 'product_detail' product.id %}" class="product-link">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                {% else %}
+                <div class="image-placeholder">
+                    <i class="fas fa-image"></i>
+                </div>
+                {% endif %}
+                <div class="product-info">
+                    <h3>{{ product.name }}</h3>
+                    <p class="price">₦{{ product.price }}</p>
+                </div>
+            </a>
+            <a href="{% url 'remove_from_wishlist' product.id %}" class="remove-btn">
+                Remove
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-wishlist">
+        <h3>Your wishlist is empty</h3>
+        <p>Save your favorite items here for later</p>
+        <a href="{% url 'product_list' %}" class="shop-btn">Browse Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wishlist-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .wishlist-header {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .wishlist-count {
+        font-size: 1.1rem;
+        color: #666;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 25px;
+    }
+
+    .product-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        position: relative;
+        padding-bottom: 50px;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .product-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .image-placeholder {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        color: #ccc;
+    }
+
+    .product-info {
+        padding: 15px;
+    }
+
+    .product-info h3 {
+        margin: 0 0 10px 0;
+        font-size: 1.1rem;
+    }
+
+    .price {
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+
+    .remove-btn {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+        display: block;
+        padding: 8px 0;
+        background-color: #ff6b6b;
+        color: white;
+        text-align: center;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .remove-btn:hover {
+        background-color: #e05555;
+    }
+
+    .empty-wishlist {
+        text-align: center;
+        padding: 50px 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .empty-wishlist h3 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .empty-wishlist p {
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .shop-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .shop-btn:hover {
+        background-color: #0069d9;
+        color: white;
+    }
+</style>
+{% endblock %}
