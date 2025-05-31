@@ -177,13 +177,13 @@ def update_profile_view(request):
             user.full_name = request.POST.get('full_name', user.full_name)
             user.email = request.POST.get('email', user.email)
             user.save()
-            messages.success(request, 'Profile updated successfully!')
+            messages.success(request, 'Profile updated successfully!', extra_tags='edit_profile')
             return redirect('profile')
 
         except ValidationError as e:
-            messages.error(request, str(e))
+            messages.error(request, str(e), extra_tags='edit_profile')
         except Exception as e:
-            messages.error(request, f'Error updating profile: {str(e)}')
+            messages.error(request, f'Error updating profile: {str(e)}', extra_tags='edit_profile')
 
     return render(request, "accounts/edit_profile.html", {
         "profile_user": request.user
