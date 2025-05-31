@@ -34,7 +34,11 @@ def home_view(request):
     # Get recommendations
     recommendations = []
     if request.user.is_authenticated:
+        print(f"Getting recommendations for user {request.user.id}")
         recommendations = engine.get_recommendations(request.user.id)
+        print(f"Found {len(recommendations)} recommendations")
+        for rec in recommendations:
+            print(f"Recommendation: {rec.title}")
 
     # Get wishlist IDs for the current user
     wishlist_ids = []

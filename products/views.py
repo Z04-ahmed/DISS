@@ -3,12 +3,13 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Count
-from accounts.models import Customer, User
+from accounts.models import Customer, User, SearchHistory
 from boards.models import Board
 from .models import Brand, BrandRepresentative, Category, Product
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login, authenticate
 from django.db.models.functions import Coalesce
+from lib.recommendations import RecommendationEngine
 
 
 def product_list(request):
@@ -20,6 +21,10 @@ def product_list(request):
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     sort_by = request.GET.get('sort', 'title')  # e.g., 'price', '-price'
+
+    # Save search query if user is authenticated
+    if search_query and request.user.is_authenticated:
+        SearchHistory.objects.create(user=request.user, query=search_query)
 
     if search_query:
         products = products.filter(title__icontains=search_query)
@@ -84,7 +89,12 @@ def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     customer = Customer.objects.get(user=request.user) if request.user.is_authenticated else None
     boards = Board.objects.filter(customer=customer) if request.user.is_authenticated else []
-    print(boards)
+    
+    # Record the view if user is authenticated
+    if request.user.is_authenticated:
+        engine = RecommendationEngine()
+        engine.record_view(request.user.id, product.id)
+    
     return render(request, 'products/product_detail.html', {
         'product': product,
         'boards': boards
@@ -109,9 +119,6 @@ def create_product(request):
         )
 
         return redirect('product_list')
-
-    categories = Category.objects.all()
-    return render(request, 'products/create_product.html', {'categories': categories})
 
 
 def brand_rep_signup(request):

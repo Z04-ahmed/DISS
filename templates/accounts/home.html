@@ -313,7 +313,7 @@ Klozit{%endblock %} {% block content %}
 
 <!-- Search Section -->
 <div class="search-container">
-  <form class="search-box" method="GET">
+  <form class="search-box" method="GET" action="{% url 'product_list' %}">
     <i class="fas fa-search search-icon"></i>
     <input
       type="text"
@@ -323,16 +323,6 @@ Klozit{%endblock %} {% block content %}
       value="{{ search_query }}"
     />
   </form>
-
-  {% if recent_searches %}
-  <div class="recent-searches">
-    {% for search in recent_searches %}
-    <a href="?q={{ search.query }}" class="recent-search-item"
-      >{{ search.query }}</a
-    >
-    {% endfor %}
-  </div>
-  {% endif %}
 </div>
 
 <!-- Categories Section -->
@@ -370,7 +360,7 @@ Klozit{%endblock %} {% block content %}
       {% endif %} {% if product.image %}
       <img
         src="{{ product.image.url }}"
-        alt="{{ product.name }}"
+        alt="{{ product.title }}"
         class="product-image"
         loading="lazy"
       />
@@ -400,7 +390,7 @@ Klozit{%endblock %} {% block content %}
 
       <div class="product-info">
         <div class="product-price">${{ product.price }}</div>
-        <div class="product-title">{{ product.name }}</div>
+        <div class="product-title">{{ product.title }}</div>
         <div class="product-brand">{{ product.brand|default:"Klozit" }}</div>
       </div>
     </div>
@@ -422,7 +412,7 @@ Klozit{%endblock %} {% block content %}
       {% if product.image %}
       <img
         src="{{ product.image.url }}"
-        alt="{{ product.name }}"
+        alt="{{ product.title }}"
         class="product-image"
         loading="lazy"
       />
@@ -452,7 +442,7 @@ Klozit{%endblock %} {% block content %}
 
       <div class="product-info">
         <div class="product-price">${{ product.price }}</div>
-        <div class="product-title">{{ product.name }}</div>
+        <div class="product-title">{{ product.title }}</div>
         <div class="product-brand">{{ product.brand|default:"Klozit" }}</div>
       </div>
     </div>
@@ -474,7 +464,7 @@ Klozit{%endblock %} {% block content %}
       {% if product.image %}
       <img
         src="{{ product.image.url }}"
-        alt="{{ product.name }}"
+        alt="{{ product.title }}"
         class="product-image"
         loading="lazy"
       />
@@ -504,7 +494,7 @@ Klozit{%endblock %} {% block content %}
 
       <div class="product-info">
         <div class="product-price">${{ product.price }}</div>
-        <div class="product-title">{{ product.name }}</div>
+        <div class="product-title">{{ product.title }}</div>
         <div class="product-brand">{{ product.brand|default:"Klozit" }}</div>
       </div>
     </div>
