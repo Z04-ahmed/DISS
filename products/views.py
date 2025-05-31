@@ -8,6 +8,7 @@ from boards.models import Board
 from .models import Brand, BrandRepresentative, Category, Product
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login, authenticate
+from django.db.models.functions import Coalesce
 
 
 def product_list(request):
@@ -24,7 +25,11 @@ def product_list(request):
         products = products.filter(title__icontains=search_query)
 
     if category:
-        products = products.filter(category__name__iexact=category)
+        try:
+            category_id = int(category)
+            products = products.filter(category_id=category_id)
+        except (ValueError, TypeError):
+            pass
 
     if brand:
         if brand.isdigit():
@@ -54,16 +59,14 @@ def product_list(request):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
-    # Check saved products for logged-in user
-    saved_product_ids = []
-    if request.user.is_authenticated:
-        saved_product_ids = list(
-            request.user.customer.saved_items.values_list('id', flat=True)
-        )
+    # Get wishlist IDs for the current user
+    wishlist_ids = []
+    if request.user.is_authenticated and hasattr(request.user, 'customer'):
+        wishlist_ids = list(request.user.customer.wishlist.values_list('id', flat=True))
 
     context = {
         'products': page_obj,
-        'saved_product_ids': saved_product_ids,
+        'wishlist_ids': wishlist_ids,
         'categories': Category.objects.all(),
         'brands': Brand.objects.all(),
         'description': "Discover our curated collection of fashion items",
@@ -134,11 +137,6 @@ def brand_rep_signup(request):
                 is_approved=False  # Brand needs admin approval
             )
 
-            # Handle logo upload
-            if 'logo' in request.FILES:
-                brand.logo = request.FILES['logo']
-                brand.save()
-
             # Create user
             user = User.objects.create(
                 email=email,
@@ -200,7 +198,8 @@ def brand_dashboard(request):
 
         return render(request, 'brandrep/dashboard.html', {
             'brand': brand_rep.brand,
-            'products': products
+            'products': products,
+            'phone_number': brand_rep.phone_number
         })
 
     except BrandRepresentative.DoesNotExist:
@@ -223,7 +222,7 @@ def add_product(request):
 
             # Basic validation
             if not all([title, price, category_id]):
-                messages.error(request, 'Please fill all required fields')
+                messages.error(request, 'Please fill all required fields', extra_tags='add_product')
                 return redirect('add_product')
 
             try:
@@ -236,14 +235,78 @@ def add_product(request):
                     category=category,
                     brand=brand_rep.brand
                 )
-                messages.success(request, 'Product added successfully!')
+                messages.success(request, 'Product added successfully!', extra_tags='add_product')
                 return redirect('brand_dashboard')
             except Exception as e:
-                messages.error(request, f'Error adding product: {str(e)}')
+                messages.error(request, f'Error adding product: {str(e)}', extra_tags='add_product')
 
         categories = Category.objects.all()
         return render(request, 'brandrep/add_product.html', {'categories': categories})
 
+    except BrandRepresentative.DoesNotExist:
+        messages.error(request, 'You are not a registered brand representative')
+        return redirect('logout')
+
+@login_required
+def view_product(request, product_id):
+    try:
+        brand_rep = BrandRepresentative.objects.get(user=request.user)
+        product = get_object_or_404(Product, id=product_id, brand=brand_rep.brand)
+        
+        return render(request, 'brandrep/view_product.html', {
+            'product': product,
+            'brand': brand_rep.brand
+        })
+    except BrandRepresentative.DoesNotExist:
+        messages.error(request, 'You are not a registered brand representative')
+        return redirect('logout')
+
+@login_required
+def edit_product(request, product_id):
+    try:
+        brand_rep = BrandRepresentative.objects.get(user=request.user)
+        product = get_object_or_404(Product, id=product_id, brand=brand_rep.brand)
+        
+        if request.method == 'POST':
+            title = request.POST.get('title')
+            description = request.POST.get('description')
+            price = request.POST.get('price')
+            category_id = request.POST.get('category')
+            image = request.FILES.get('image')
+            
+            if title and description and price and category_id:
+                product.title = title
+                product.description = description
+                product.price = price
+                product.category_id = category_id
+                if image:
+                    product.image = image
+                product.save()
+                
+                messages.success(request, 'Product updated successfully.', extra_tags='edit_product')
+                return redirect('view_product', product_id=product.id)
+            else:
+                messages.error(request, 'Please fill in all required fields.', extra_tags='edit_product')
+        
+        return render(request, 'brandrep/edit_product.html', {
+            'product': product,
+            'categories': Category.objects.all(),
+            'brand': brand_rep.brand
+        })
+    except BrandRepresentative.DoesNotExist:
+        messages.error(request, 'You are not a registered brand representative')
+        return redirect('logout')
+
+@login_required
+def delete_product(request, product_id):
+    try:
+        brand_rep = BrandRepresentative.objects.get(user=request.user)
+        product = get_object_or_404(Product, id=product_id, brand=brand_rep.brand)
+        product_title = product.title
+        product.delete()
+        
+        messages.success(request, f'Product "{product_title}" has been deleted.', extra_tags='delete_product')
+        return redirect('brand_dashboard')
     except BrandRepresentative.DoesNotExist:
         messages.error(request, 'You are not a registered brand representative')
         return redirect('logout')

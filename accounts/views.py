@@ -18,7 +18,6 @@ User = get_user_model()
 
 
 
-@login_required
 def home_view(request):
     engine = RecommendationEngine()
 
@@ -37,10 +36,10 @@ def home_view(request):
     if request.user.is_authenticated:
         recommendations = engine.get_recommendations(request.user.id)
 
-    # Get saved product IDs (direct from DB)
-    saved_product_ids = []
+    # Get wishlist IDs for the current user
+    wishlist_ids = []
     if request.user.is_authenticated and hasattr(request.user, 'customer'):
-        saved_product_ids = request.user.customer.saved_items.values_list('id', flat=True)
+        wishlist_ids = list(request.user.customer.wishlist.values_list('id', flat=True))
 
     context = {
         "categories": categories,
@@ -48,7 +47,7 @@ def home_view(request):
         "all_products": all_products,
         "search_query": search_query,
         "recommendations": recommendations,
-        "saved_product_ids": list(saved_product_ids),
+        "wishlist_ids": wishlist_ids,
         "recent_searches": SearchHistory.objects.filter(user=request.user)[:5] if request.user.is_authenticated else []
     }
     return render(request, "accounts/home.html", context)

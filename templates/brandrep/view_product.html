@@ -1,0 +1,258 @@
+{% extends 'brandrep/base.html' %} {% load static %} {% block content %}
+<div class="product-detail-container">
+  {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% empty %}
+    <!-- No messages to display -->
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="product-header">
+    <h1>{{ product.title }}</h1>
+    <div class="product-actions">
+      <a href="{% url 'edit_product' product.id %}" class="edit-btn">
+        <i class="fas fa-edit"></i> Edit
+      </a>
+      <button onclick="confirmDelete({{ product.id }})" class="delete-btn">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+    </div>
+  </div>
+
+  <div class="product-content">
+    <div class="product-image">
+      {% if product.image %}
+      <img src="{{ product.image.url }}" alt="{{ product.title }}" />
+      {% else %}
+      <div class="no-image">
+        <i class="fas fa-image"></i>
+        <span>No image available</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="product-details">
+      <div class="detail-section">
+        <h3>Price</h3>
+        <p class="price">£{{ product.price }}</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Category</h3>
+        <p>{{ product.category.name|default:"Uncategorized" }}</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Description</h3>
+        <p>{{ product.description|linebreaksbr }}</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Stats</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <i class="fas fa-heart"></i>
+            <span>{{ product.wishlist_count }} Saves</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-eye"></i>
+            <span>{{ product.views_count|default:"0" }} Views</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Created</h3>
+        <p>{{ product.created_at|date:"F j, Y" }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(productId) {
+    if (
+      confirm(
+        "Are you sure you want to delete this product? This action cannot be undone."
+      )
+    ) {
+      window.location.href = `/products/${productId}/delete/`;
+    }
+  }
+</script>
+
+<style>
+  .product-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .product-header h1 {
+    margin: 0;
+    color: #333;
+    font-size: 28px;
+  }
+
+  .product-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .edit-btn {
+    background: #8a2be2;
+    color: white;
+  }
+
+  .edit-btn:hover {
+    background: #7b1fa2;
+  }
+
+  .delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  .delete-btn:hover {
+    background: #c82333;
+  }
+
+  .product-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-image {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .no-image {
+    width: 100%;
+    height: 100%;
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    gap: 12px;
+  }
+
+  .no-image i {
+    font-size: 48px;
+  }
+
+  .product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .detail-section h3 {
+    margin: 0 0 12px;
+    color: #333;
+    font-size: 18px;
+  }
+
+  .detail-section p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .price {
+    color: #8a2be2;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .stat-item {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stat-item i {
+    color: #8a2be2;
+    font-size: 20px;
+  }
+
+  .stat-item span {
+    color: #333;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .product-detail-container {
+      padding: 16px;
+    }
+
+    .product-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .product-content {
+      grid-template-columns: 1fr;
+    }
+
+    .product-actions {
+      width: 100%;
+    }
+
+    .edit-btn,
+    .delete-btn {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}

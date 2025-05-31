@@ -1,38 +1,170 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Brand Dashboard{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/brandrep.css' %}">
-</head>
-<body>
-    {% if user.is_authenticated and user.user_type == 'BRAND_REPRESENTATIVE' %}
-    <nav class="brand-nav">
-        <div class="brand-logo">
-            <h1>{{ user.brandrepresentative.brand.name }}</h1>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brand Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="brandrep-container">
+      <nav class="brandrep-nav">
+        <div class="nav-content">
+          <a href="{% url 'brand_dashboard' %}" class="nav-logo">
+            <i class="fas fa-store"></i>
+            <span>Brand Dashboard</span>
+          </a>
+          <div class="nav-links">
+            <a
+              href="{% url 'brand_dashboard' %}"
+              class="nav-link {% if request.resolver_match.url_name == 'brand_dashboard' %}active{% endif %}"
+            >
+              <i class="fas fa-chart-line"></i>
+              <span>Dashboard</span>
+            </a>
+            <a
+              href="{% url 'add_product' %}"
+              class="nav-link {% if request.resolver_match.url_name == 'add_product' %}active{% endif %}"
+            >
+              <i class="fas fa-plus-circle"></i>
+              <span>Add Product</span>
+            </a>
+            <a href="{% url 'logout' %}" class="nav-link">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </a>
+          </div>
         </div>
-        <div class="nav-links">
-            <a href="{% url 'brand_dashboard' %}">Dashboard</a>
-            <a href="{% url 'add_product' %}">Add Product</a>
-            <a href="{% url 'logout' %}">Logout</a>
-        </div>
-    </nav>
+      </nav>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer class="brand-footer">
-        <p>{{ user.brandrepresentative.brand.name }} &copy; {% now "Y" %}</p>
-    </footer>
-    {% else %}
-    <div class="access-denied">
-        <h2>Access Denied</h2>
-        <p>You must be logged in as a brand representative to view this page.</p>
-        <a href="{% url 'brand_rep_login' %}?next={{ request.path }}">Login</a>
+      <main class="brandrep-main">{% block content %}{% endblock %}</main>
     </div>
-    {% endif %}
-</body>
+
+    <style>
+      :root {
+        --brandrep-primary: #6b46c1;
+        --brandrep-primary-dark: #553c9a;
+        --brandrep-primary-light: #9f7aea;
+        --brandrep-secondary: #f7fafc;
+        --brandrep-text: #2d3748;
+        --brandrep-text-light: #718096;
+        --brandrep-border: #e2e8f0;
+        --brandrep-success: #48bb78;
+        --brandrep-error: #f56565;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .brandrep-container {
+        min-height: 100vh;
+        background-color: var(--brandrep-secondary);
+      }
+
+      .brandrep-nav {
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .nav-content {
+        max-width: 1236px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 64px;
+      }
+
+      .nav-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--brandrep-primary);
+        font-size: 20px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .nav-logo i {
+        font-size: 24px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 24px;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--brandrep-text-light);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.15s ease-out;
+      }
+
+      .nav-link:hover {
+        color: var(--brandrep-primary);
+        background: var(--brandrep-secondary);
+      }
+
+      .nav-link.active {
+        color: var(--brandrep-primary);
+        background: var(--brandrep-secondary);
+      }
+
+      .nav-link i {
+        font-size: 18px;
+      }
+
+      .brandrep-main {
+        max-width: 1236px;
+        margin: 0 auto;
+        padding: 32px 16px;
+      }
+
+      @media (max-width: 768px) {
+        .nav-content {
+          flex-direction: column;
+          height: auto;
+          padding: 16px;
+          gap: 16px;
+        }
+
+        .nav-links {
+          width: 100%;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .nav-link {
+          flex: 1;
+          justify-content: center;
+          padding: 12px;
+        }
+
+        .nav-link span {
+          display: none;
+        }
+
+        .nav-link i {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </body>
 </html>

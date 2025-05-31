@@ -1,441 +1,604 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block content %}
-<!-- Hero Section -->
-<section class="hero-section">
-    <div class="hero-content">
-        <h2 class="hero-subtitle">Your One-Stop Shop</h2>
-        <h1 class="hero-title">For All Your Fashion Needs</h1>
-    </div>
-    <div class="search-container">
-        <form method="GET" action="{% url 'home' %}">
-            <input type="text" name="q" placeholder="Search products..." class="search-input" value="{{ search_query|default:'' }}">
-            <button type="submit" class="search-button">
-                <img src="{% static 'icons/search.svg' %}" alt="Search">
-            </button>
-        </form>
-
-        {% if recent_searches %}
-        <div class="recent-searches">
-            <h3>Recent Searches</h3>
-            <ul>
-                {% for search in recent_searches %}
-                    <li><a href="?q={{ search.query }}">{{ search.query }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-    </div>
-</section>
-
-<!-- Main Content -->
-<main class="content-container">
-    <!-- Recommended Products -->
-    {% if recommendations %}
-    <section class="recommendations-section">
-        <h2 class="section-title">Recommended For You</h2>
-        <div class="product-grid">
-            {% for product in recommendations %}
-            <article class="product-card">
-                <a href="{% url 'product_detail' product.id %}" class="product-link" onclick="recordView({{ product.id }})">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
-                    {% else %}
-                    <div class="image-placeholder">
-                        <i class="fas fa-image"></i>
-                    </div>
-                    {% endif %}
-                    <div class="product-info">
-                        <h3 class="product-title">{{ product.title }}</h3>
-                        <p class="product-price">${{ product.price }}</p>
-                    </div>
-                </a>
-                {% if product.id in saved_product_ids %}
-                    <button class="save-btn saved" data-product-id="{{ product.id }}">
-                        <i class="fas fa-heart"></i> Saved
-                    </button>
-                {% else %}
-                    <button class="save-btn unsaved" data-product-id="{{ product.id }}">
-                        <i class="far fa-heart"></i> Save
-                    </button>
-                {% endif %}
-            </article>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
-
-    <!-- Categories Grid -->
-    <section class="categories-section">
-        <h2 class="section-title">Shop by Category</h2>
-        <div class="categories-grid">
-            {% for category in categories %}
-                <a href="?category={{ category.name }}" class="category-card">
-                    <div class="category-content">
-                        <h3 class="category-title">{{ category.name }}</h3>
-                        <p class="category-count">{{ category.product_count }} items</p>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Best Sellers Section -->
-    <section class="bestsellers-section">
-        <h2 class="section-title">BESTSELLERS</h2>
-        <div class="product-grid">
-            {% for product in trending_products %}
-                <article class="product-card">
-                    <a href="{% url 'product_detail' product.id %}" class="product-link" onclick="recordView({{ product.id }})">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
-                        {% else %}
-                        <div class="image-placeholder">
-                            <i class="fas fa-image"></i>
-                        </div>
-                        {% endif %}
-                        <div class="product-info">
-                            <h3 class="product-title">{{ product.title }}</h3>
-                            <p class="product-price">${{ product.price }}</p>
-                        </div>
-                    </a>
-                    {% if product.id in saved_product_ids %}
-                        <button class="save-btn saved" data-product-id="{{ product.id }}">
-                            <i class="fas fa-heart"></i> Saved
-                        </button>
-                    {% else %}
-                        <button class="save-btn unsaved" data-product-id="{{ product.id }}">
-                            <i class="far fa-heart"></i> Save
-                        </button>
-                    {% endif %}
-                </article>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- All Products Section -->
-    <section class="all-products-section">
-        <h2 class="section-title">All Products</h2>
-        <div class="product-grid">
-            {% for product in all_products %}
-                <article class="product-card">
-                    <a href="{% url 'product_detail' product.id %}" class="product-link" onclick="recordView({{ product.id }})">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
-                        {% else %}
-                        <div class="image-placeholder">
-                            <i class="fas fa-image"></i>
-                        </div>
-                        {% endif %}
-                        <div class="product-info">
-                            <h3 class="product-title">{{ product.title }}</h3>
-                            <p class="product-price">${{ product.price }}</p>
-                        </div>
-                    </a>
-                    {% if product.id in saved_product_ids %}
-                        <button class="save-btn saved" data-product-id="{{ product.id }}">
-                            <i class="fas fa-heart"></i> Saved
-                        </button>
-                    {% else %}
-                        <button class="save-btn unsaved" data-product-id="{{ product.id }}">
-                            <i class="far fa-heart"></i> Save
-                        </button>
-                    {% endif %}
-                </article>
-            {% empty %}
-                <p class="no-products">No products found{% if search_query %} matching "{{ search_query }}"{% endif %}.</p>
-            {% endfor %}
-        </div>
-    </section>
-</main>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Save/Unsave functionality
-    document.querySelectorAll('.save-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const productId = this.dataset.productId;
-            const url = `/product/toggle-save/${productId}/`;
-
-            // Visual feedback
-            this.disabled = true;
-            const originalHTML = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Toggle between saved/unsaved states
-                    if (data.action === 'saved') {
-                        this.innerHTML = '<i class="fas fa-heart"></i> Saved';
-                        this.classList.add('saved');
-                        this.classList.remove('unsaved');
-                    } else {
-                        this.innerHTML = '<i class="far fa-heart"></i> Save';
-                        this.classList.add('unsaved');
-                        this.classList.remove('saved');
-                    }
-                }
-            })
-            .catch(error => console.error('Error:', error))
-            .finally(() => {
-                this.disabled = false;
-            });
-        });
-    });
-});
-
-function recordView(productId) {
-    if ("{{ request.user.is_authenticated|yesno:"true,false" }}" === "true") {
-        fetch(`/record-view/${productId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json',
-            }
-        }).catch(error => console.error('Error recording view:', error));
-    }
-}
-</script>
+{% extends 'base.html' %} {% load static %} {% block title %}Home -
+Klozit{%endblock %} {% block content %}
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
 
 <style>
-    /* Base Styles */
-    .hero-section {
-        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{% static "images/hero-bg.jpg" %}');
-        background-size: cover;
-        background-position: center;
-        color: white;
-        padding: 80px 20px;
-        text-align: center;
+  .search-container {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 16px 20px 16px 48px;
+    font-size: 16px;
+    border: 1px solid #dadada;
+    border-radius: 28px;
+    background-color: #f1f1f1;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+    transition: all 0.15s ease-out;
+  }
+
+  .search-input:focus {
+    outline: 2px solid #0074e4;
+    outline-offset: 2px;
+    background-color: white;
+    border-color: #0074e4;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #767676;
+    font-size: 18px;
+  }
+
+  .recent-searches {
+    margin: 16px 0;
+    text-align: center;
+  }
+
+  .recent-search-item {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 4px;
+    background-color: #f1f1f1;
+    border-radius: 20px;
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s ease-out;
+  }
+
+  .recent-search-item:hover {
+    background-color: #e6e6e6;
+  }
+
+  .section-title {
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin: 48px 0 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+  }
+
+  .categories-section {
+    max-width: 1200px;
+    margin: 0 auto 48px;
+    padding: 0 16px;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .category-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease-out;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #dadada;
+  }
+
+  .category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .category-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .category-count {
+    font-size: 14px;
+    color: #767676;
+  }
+
+  /* Pinterest Masonry Grid */
+  .products-container {
+    max-width: 1236px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  .products-grid {
+    columns: 236px;
+    column-gap: 16px;
+    margin: 24px 0;
+  }
+
+  .product-pin {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 16px;
+    break-inside: avoid;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease-out;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .product-pin:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .product-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-pin:hover .product-overlay {
+    opacity: 1;
+  }
+
+  .save-button {
+    background: #e60023;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease-out;
+  }
+
+  .save-button:hover {
+    background: #ad081b;
+    transform: scale(1.05);
+  }
+
+  .save-button.saved {
+    background: #111;
+  }
+
+  .product-info {
+    padding: 16px;
+  }
+
+  .product-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .product-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e60023;
+    margin-bottom: 4px;
+  }
+
+  .product-brand {
+    font-size: 14px;
+    color: #767676;
+    font-weight: 500;
+  }
+
+  .trending-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #ff4757;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .products-grid {
+      columns: 2;
+      column-gap: 12px;
     }
 
-    .hero-title {
-        font-size: 2.5rem;
-        margin-bottom: 20px;
+    .section-title {
+      font-size: 24px;
+      margin: 32px 0 24px;
+    }
+
+    .categories-grid {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
     }
 
     .search-container {
-        max-width: 600px;
-        margin: 0 auto;
-        position: relative;
+      padding: 0 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .products-grid {
+      columns: 1;
     }
 
-    .search-input {
-        width: 100%;
-        padding: 12px 20px;
-        border-radius: 30px;
-        border: none;
-        font-size: 1rem;
-    }
-
-    .search-button {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        cursor: pointer;
-    }
-
-    /* Recent Searches */
-    .recent-searches {
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 0 0 10px 10px;
-        padding: 10px 20px;
-        margin-top: -5px;
-    }
-
-    .recent-searches h3 {
-        font-size: 0.9rem;
-        color: #666;
-        margin-bottom: 8px;
-    }
-
-    .recent-searches ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .recent-searches li a {
-        color: #333;
-        text-decoration: none;
-        font-size: 0.9rem;
-        padding: 3px 8px;
-        background: #f0f0f0;
-        border-radius: 12px;
-    }
-
-    /* Sections */
-    .section-title {
-        font-size: 1.5rem;
-        margin-bottom: 20px;
-        color: #333;
-        text-align: center;
-    }
-
-    .content-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    /* Categories */
     .categories-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 15px;
-        margin-top: 20px;
+      grid-template-columns: 1fr;
     }
+  }
 
-    .category-card {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        color: #333;
-        border: 1px solid #e0e0e0;
+  /* Loading and Empty States */
+  .empty-state {
+    text-align: center;
+    padding: 64px 16px;
+    color: #767676;
+  }
+
+  .empty-state i {
+    font-size: 64px;
+    margin-bottom: 24px;
+    color: #dadada;
+  }
+
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 48px;
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f1f1f1;
+    border-top: 3px solid #e60023;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
     }
-
-    .category-card:hover {
-        background-color: #e9ecef;
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    100% {
+      transform: rotate(360deg);
     }
-
-    .category-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .category-title {
-        margin: 0 0 5px 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-
-    .category-count {
-        margin: 0;
-        font-size: 0.9rem;
-        color: #666;
-    }
-
-    /* Product Grid */
-    .product-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 25px;
-        margin-top: 20px;
-    }
-
-    .product-card {
-        border: 1px solid #eee;
-        border-radius: 8px;
-        overflow: hidden;
-        position: relative;
-        transition: transform 0.3s ease;
-    }
-
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .product-image {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-
-    .image-placeholder {
-        height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f5f5f5;
-        color: #ccc;
-    }
-
-    .product-info {
-        padding: 15px;
-    }
-
-    .product-title {
-        margin: 0 0 5px 0;
-        font-size: 1rem;
-    }
-
-    .product-price {
-        font-weight: bold;
-        color: #333;
-        margin: 0;
-    }
-
-    /* Save Button */
-    .save-btn {
-        position: absolute;
-        bottom: 15px;
-        right: 15px;
-        padding: 6px 12px;
-        border-radius: 15px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        border: 1px solid #ddd;
-    }
-
-    .save-btn.saved {
-        background-color: #ff6b6b;
-        color: white;
-        border-color: #ff6b6b;
-    }
-
-    .save-btn.unsaved {
-        background-color: white;
-        color: #666;
-    }
-
-    /* No Products Message */
-    .no-products {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 40px 0;
-        color: #666;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .product-grid, .categories-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        }
-
-        .hero-title {
-            font-size: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-        }
-    }
+  }
 </style>
+
+<!-- Search Section -->
+<div class="search-container">
+  <form class="search-box" method="GET">
+    <i class="fas fa-search search-icon"></i>
+    <input
+      type="text"
+      name="q"
+      class="search-input"
+      placeholder="Search for fashion items..."
+      value="{{ search_query }}"
+    />
+  </form>
+
+  {% if recent_searches %}
+  <div class="recent-searches">
+    {% for search in recent_searches %}
+    <a href="?q={{ search.query }}" class="recent-search-item"
+      >{{ search.query }}</a
+    >
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="categories-section">
+  <h2 class="section-title">Shop by Category</h2>
+  <div class="categories-grid">
+    {% for category in categories %}
+    <a
+      href="{% url 'product_list' %}?category={{ category.id }}"
+      class="category-card"
+    >
+      <div class="category-name">{{ category.name }}</div>
+      <div class="category-count">
+        {{ category.product_count }} item{{ category.product_count|pluralize }}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Trending Products Section -->
+{% if trending_products %}
+<section class="products-container">
+  <h2 class="section-title">Trending Now</h2>
+  <div class="products-grid">
+    {% for product in trending_products %}
+    <div
+      class="product-pin"
+      onclick="window.location.href='{% url 'product_detail' product.id %}'"
+    >
+      {% if product.is_trending %}
+      <div class="trending-badge">Trending</div>
+      {% endif %} {% if product.image %}
+      <img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        class="product-image"
+        loading="lazy"
+      />
+      {% else %}
+      <div
+        class="product-image"
+        style="
+          background: #f1f1f1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <i class="fas fa-image" style="font-size: 48px; color: #dadada"></i>
+      </div>
+      {% endif %}
+
+      <div class="product-overlay">
+        <button
+          class="save-button {% if product.id in wishlist_ids %}saved{% endif %}"
+          onclick="event.stopPropagation(); toggleSave({{ product.id }}, this)"
+        >
+          <i class="fas fa-heart"></i>
+          {% if product.id in wishlist_ids %}Saved{% else %}Save{% endif %}
+        </button>
+      </div>
+
+      <div class="product-info">
+        <div class="product-price">${{ product.price }}</div>
+        <div class="product-title">{{ product.name }}</div>
+        <div class="product-brand">{{ product.brand|default:"Klozit" }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Recommendations Section -->
+{% if recommendations %}
+<section class="products-container">
+  <h2 class="section-title">Recommended for You</h2>
+  <div class="products-grid">
+    {% for product in recommendations %}
+    <div
+      class="product-pin"
+      onclick="window.location.href='{% url 'product_detail' product.id %}'"
+    >
+      {% if product.image %}
+      <img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        class="product-image"
+        loading="lazy"
+      />
+      {% else %}
+      <div
+        class="product-image"
+        style="
+          background: #f1f1f1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <i class="fas fa-image" style="font-size: 48px; color: #dadada"></i>
+      </div>
+      {% endif %}
+
+      <div class="product-overlay">
+        <button
+          class="save-button {% if product.id in wishlist_ids %}saved{% endif %}"
+          onclick="event.stopPropagation(); toggleSave({{ product.id }}, this)"
+        >
+          <i class="fas fa-heart"></i>
+          {% if product.id in wishlist_ids %}Saved{% else %}Save{% endif %}
+        </button>
+      </div>
+
+      <div class="product-info">
+        <div class="product-price">${{ product.price }}</div>
+        <div class="product-title">{{ product.name }}</div>
+        <div class="product-brand">{{ product.brand|default:"Klozit" }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- All Products Section -->
+{% if all_products %}
+<section class="products-container">
+  <h2 class="section-title">Discover More</h2>
+  <div class="products-grid">
+    {% for product in all_products %}
+    <div
+      class="product-pin"
+      onclick="window.location.href='{% url 'product_detail' product.id %}'"
+    >
+      {% if product.image %}
+      <img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        class="product-image"
+        loading="lazy"
+      />
+      {% else %}
+      <div
+        class="product-image"
+        style="
+          background: #f1f1f1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <i class="fas fa-image" style="font-size: 48px; color: #dadada"></i>
+      </div>
+      {% endif %}
+
+      <div class="product-overlay">
+        <button
+          class="save-button {% if product.id in wishlist_ids %}saved{% endif %}"
+          onclick="event.stopPropagation(); toggleSave({{ product.id }}, this)"
+        >
+          <i class="fas fa-heart"></i>
+          {% if product.id in wishlist_ids %}Saved{% else %}Save{% endif %}
+        </button>
+      </div>
+
+      <div class="product-info">
+        <div class="product-price">${{ product.price }}</div>
+        <div class="product-title">{{ product.name }}</div>
+        <div class="product-brand">{{ product.brand|default:"Klozit" }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Empty State -->
+{% if not trending_products and not recommendations and not all_products %}
+<div class="empty-state">
+  <i class="fas fa-shopping-bag"></i>
+  <h3>No products found</h3>
+  <p>Check back later for new fashion items!</p>
+</div>
+{% endif %}
+
+<script>
+  // Toggle save functionality
+  function toggleSave(productId, button) {
+    const csrfToken = document.querySelector(
+      "[name=csrfmiddlewaretoken]"
+    ).value;
+
+    fetch(`/wishlist/toggle/${productId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrfToken,
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      credentials: "same-origin",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.status === "success") {
+          if (data.action === "added") {
+            button.classList.add("saved");
+            button.innerHTML = '<i class="fas fa-heart"></i> Saved';
+          } else {
+            button.classList.remove("saved");
+            button.innerHTML = '<i class="fas fa-heart"></i> Save';
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        // Revert button state on error
+        button.classList.toggle("saved");
+        button.innerHTML = button.classList.contains("saved")
+          ? '<i class="fas fa-heart"></i> Saved'
+          : '<i class="fas fa-heart"></i> Save';
+      });
+  }
+
+  // Masonry grid adjustment on window resize
+  window.addEventListener("resize", function () {
+    // Pinterest-style responsive columns
+    const grids = document.querySelectorAll(".products-grid");
+    grids.forEach((grid) => {
+      const width = window.innerWidth;
+      if (width <= 480) {
+        grid.style.columns = "1";
+      } else if (width <= 768) {
+        grid.style.columns = "2";
+      } else {
+        grid.style.columns = "236px";
+      }
+    });
+  });
+
+  // Lazy loading for images
+  document.addEventListener("DOMContentLoaded", function () {
+    const images = document.querySelectorAll('img[loading="lazy"]');
+
+    if ("IntersectionObserver" in window) {
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src || img.src;
+            img.classList.remove("lazy");
+            imageObserver.unobserve(img);
+          }
+        });
+      });
+
+      images.forEach((img) => imageObserver.observe(img));
+    }
+  });
+</script>
 {% endblock %}

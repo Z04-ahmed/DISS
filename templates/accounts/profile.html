@@ -1,36 +1,140 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="products-container">
+  <div class="profile-card">
+    <header class="wishlist-header">
+      <h1>{{ profile_user.full_name }}</h1>
+      <p class="email">{{ profile_user.email }}</p>
+      <p class="user-type">
+        <i class="fas fa-user-tag"></i>
+        {{ profile_user.get_user_type_display }}
+      </p>
+    </header>
 
-{% block content %}
-<div class="profile-container">
-    <div class="profile-header">
-        <div class="profile-info">
-            <h1>{{ profile_user.full_name }}</h1>
-            <p class="email">{{ profile_user.email }}</p>
-            <p class="user-type">
-                Account Type: {{ profile_user.get_user_type_display }}
-            </p>
-
-            <a href="{% url 'edit_profile' %}" class="edit-profile-btn">
-                <i class="fas fa-edit"></i> Edit Profile
-            </a>
-        </div>
+    <div class="profile-actions">
+      <a href="{% url 'edit_profile' %}" class="save-button">
+        <i class="fas fa-edit"></i> Edit Profile
+      </a>
     </div>
 
-    <div class="profile-details">
-        {% if profile_user.user_type == 'BRAND_REPRESENTATIVE' %}
-        <div class="brand-section">
-            <h3>Brand Representative Details</h3>
-            <p>Special brand-related features will appear here</p>
-        </div>
-        {% elif profile_user.user_type == 'CUSTOMER' %}
-        <div class="customer-section">
-            <h3>Customer Profile</h3>
-            <p>Customer-specific content goes here</p>
-        </div>
-        {% endif %}
+    {% if profile_user.user_type == 'BRAND_REPRESENTATIVE' %}
+    <div class="profile-section">
+      <h3>Brand Representative Details</h3>
+      <div class="profile-content">
+        <p>Special brand-related features will appear here</p>
+      </div>
     </div>
+    {% endif %}
+  </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<style>
+  .products-container {
+    max-width: 1236px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  .profile-card {
+    max-width: 800px;
+    margin: 32px auto;
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .wishlist-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .wishlist-header h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .email {
+    color: #767676;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .user-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f1f1f1;
+    border-radius: 20px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .user-type i {
+    color: #0074e4;
+  }
+
+  .profile-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .save-button {
+    background: #e60023;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease-out;
+    width: 100%;
+    max-width: 200px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .save-button:hover {
+    background: #ad081b;
+    transform: scale(1.05);
+  }
+
+  .profile-section {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+  }
+
+  .profile-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  .profile-content {
+    color: #666;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .profile-card {
+      margin: 16px;
+      padding: 24px;
+    }
+
+    .wishlist-header h1 {
+      font-size: 24px;
+    }
+  }
+</style>
 {% endblock %}
