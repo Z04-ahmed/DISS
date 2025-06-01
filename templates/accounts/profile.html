@@ -14,6 +14,9 @@
       <a href="{% url 'edit_profile' %}" class="save-button">
         <i class="fas fa-edit"></i> Edit Profile
       </a>
+      <a href="{% url 'logout' %}" class="logout-button">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
     </div>
 
     {% if profile_user.user_type == 'BRAND_REPRESENTATIVE' %}
@@ -80,10 +83,12 @@
   .profile-actions {
     display: flex;
     justify-content: center;
+    gap: 16px;
     margin-bottom: 32px;
   }
 
-  .save-button {
+  .save-button,
+  .logout-button {
     background: #e60023;
     color: white;
     border: none;
@@ -102,9 +107,18 @@
     text-decoration: none;
   }
 
-  .save-button:hover {
+  .save-button:hover,
+  .logout-button:hover {
     background: #ad081b;
     transform: scale(1.05);
+  }
+
+  .logout-button {
+    background: #333;
+  }
+
+  .logout-button:hover {
+    background: #000;
   }
 
   .profile-section {
