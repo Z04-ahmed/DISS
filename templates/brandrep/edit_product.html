@@ -1,0 +1,339 @@
+{% extends 'brandrep/base.html' %} {% load static %} {% block content %}
+<div class="products-container">
+  <div class="board-form-card">
+    <header class="wishlist-header">
+      <h1>Edit Product</h1>
+    </header>
+
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        {% if message.extra_tags == 'edit_product' %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endif %}
+      {% empty %}
+        <!-- No messages to display -->
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="product-form">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="title">Product Title*</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          class="search-input"
+          value="{{ product.title }}"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description*</label>
+        <textarea
+          id="description"
+          name="description"
+          class="search-input"
+          rows="4"
+          required
+        >{{ product.description }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="price">Price (£)*</label>
+        <input
+          type="number"
+          id="price"
+          name="price"
+          class="search-input"
+          value="{{ product.price }}"
+          required
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="category">Category*</label>
+        <select id="category" name="category" class="search-input" required>
+          <option value="">Select a category</option>
+          {% for category in categories %}
+          <option value="{{ category.id }}" {% if category.id == product.category.id %}selected{% endif %}>
+            {{ category.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="image">Product Image</label>
+        <div class="image-upload">
+          <div class="upload-area" id="uploadArea">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="current-image" />
+            {% endif %}
+            <label for="image" class="upload-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Click to change image</span>
+              <small>or drag and drop</small>
+            </label>
+            <input
+              type="file"
+              id="image"
+              name="image"
+              accept="image/*"
+            />
+          </div>
+          <img id="imagePreview" class="image-preview" style="display: none" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="save-button">
+          <i class="fas fa-save"></i>
+          Save Changes
+        </button>
+        <a href="{% url 'view_product' product.id %}" class="cancel-link">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .products-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .board-form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .wishlist-header {
+    padding: 24px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .wishlist-header h1 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+  }
+
+  .messages {
+    padding: 16px 24px;
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+
+  .alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  .product-form {
+    padding: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus {
+    border-color: #8a2be2;
+    outline: none;
+  }
+
+  .image-upload {
+    margin-top: 8px;
+  }
+
+  .upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+
+  .upload-area:hover {
+    border-color: #8a2be2;
+  }
+
+  .current-image {
+    max-width: 200px;
+    max-height: 200px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+  }
+
+  .upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+  }
+
+  .upload-label i {
+    font-size: 32px;
+    color: #8a2be2;
+  }
+
+  .upload-label small {
+    color: #999;
+  }
+
+  .upload-area input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 16px;
+    border-radius: 8px;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .save-button {
+    background: #8a2be2;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .save-button:hover {
+    background: #7b1fa2;
+    transform: translateY(-1px);
+  }
+
+  .cancel-link {
+    padding: 12px 24px;
+    color: #666;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .cancel-link:hover {
+    background: #f5f5f5;
+    color: #333;
+  }
+
+  @media (max-width: 768px) {
+    .products-container {
+      padding: 16px;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+
+    .save-button,
+    .cancel-link {
+      width: 100%;
+      text-align: center;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  // Image preview functionality
+  const imageInput = document.getElementById('image');
+  const imagePreview = document.getElementById('imagePreview');
+  const uploadArea = document.getElementById('uploadArea');
+
+  imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = 'block';
+        uploadArea.querySelector('.current-image')?.remove();
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Drag and drop functionality
+  uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#8a2be2';
+  });
+
+  uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#ddd';
+  });
+
+  uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#ddd';
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      imageInput.files = e.dataTransfer.files;
+      const event = new Event('change');
+      imageInput.dispatchEvent(event);
+    }
+  });
+</script>
+{% endblock %} 

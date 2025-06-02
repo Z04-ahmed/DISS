@@ -1,94 +1,289 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="products-container">
+  <header class="wishlist-header">
+    <h1>Your Boards</h1>
+    <a
+      href="{% url 'create_board' %}"
+      class="save-button"
+      style="max-width: 200px; margin: 0 auto"
+    >
+      <i class="fas fa-plus"></i> Create New Board
+    </a>
+  </header>
 
-{% block content %}
-<div class="boards-container">
-    <div class="boards-header">
-        <h1>Your Boards</h1>
-        <a href="{% url 'create_board' %}" class="create-board-btn">
-            <i class="fas fa-plus"></i> Create New Board
-        </a>
-    </div>
+  {% if boards %}
+  <div class="products-grid">
+    {% for board in boards %}
+    <div class="product-pin" data-board-id="{{ board.id }}">
+      {% if board.cover_image %}
+      <img
+        src="{{ board.cover_image.url }}"
+        alt="{{ board.name }}"
+        class="product-image"
+        loading="lazy"
+      />
+      {% else %}
+      <div
+        class="product-image"
+        style="
+          height: 200px;
+          background: #f1f1f1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <i class="fas fa-clipboard" style="font-size: 48px; color: #dadada"></i>
+      </div>
+      {% endif %}
 
-    {% if boards %}
-    <div class="boards-grid">
-        {% for board in boards %}
-        <div class="board-card" data-board-id="{{ board.id }}">
-            <a href="{% url 'board_detail' board.id %}">
-                {% if board.cover_image %}
-                <img src="{{ board.cover_image.url }}" alt="{{ board.name }}" class="board-cover">
-                {% else %}
-                <div class="board-cover placeholder">
-                    <i class="fas fa-clipboard"></i>
-                </div>
-                {% endif %}
-                <div class="board-info">
-                    <h3>{{ board.name }}</h3>
-                    <p class="pin-count"><i class="fas fa-thumbtack"></i> {{ board.pins.count }} Pins</p>
-                </div>
-            </a>
-            <button class="delete-board-btn" data-board-id="{{ board.id }}">
-                <i class="fas fa-trash"></i>
-            </button>
+      <div class="product-overlay">
+        <button
+          class="save-button saved"
+          onclick="event.stopPropagation(); deleteBoard({{ board.id }}, this)"
+        >
+          <i class="fas fa-trash"></i>
+          Delete Board
+        </button>
+      </div>
+
+      <div class="product-info">
+        <div class="product-title">{{ board.name }}</div>
+        <div class="product-brand">
+          <i class="fas fa-thumbtack"></i> {{ board.pins.count }} Pins
         </div>
-        {% endfor %}
+      </div>
     </div>
-    {% else %}
-    <div class="empty-state">
-        <h3>You don't have any boards yet</h3>
-        <p>Organize your saved items by creating boards</p>
-        <a href="{% url 'create_board' %}" class="create-board-btn primary">
-            <i class="fas fa-plus"></i> Create Your First Board
-        </a>
-    </div>
-    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-clipboard"></i>
+    <h3>You don't have any boards yet</h3>
+    <p>Organize your saved items by creating boards</p>
+    <a
+      href="{% url 'create_board' %}"
+      class="save-button"
+      style="max-width: 200px; margin: 20px auto"
+    >
+      <i class="fas fa-plus"></i> Create Your First Board
+    </a>
+  </div>
+  {% endif %}
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Delete board functionality
-    document.querySelectorAll('.delete-board-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const boardId = this.getAttribute('data-board-id');
+<style>
+  .products-container {
+    max-width: 1236px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
 
-            if (confirm('Are you sure you want to delete this board?')) {
-                fetch(`/boards/${boardId}/delete/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({})
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.querySelector(`.board-card[data-board-id="${boardId}"]`).remove();
-                        // Update empty state if no boards left
-                        if (document.querySelectorAll('.board-card').length === 0) {
-                            document.querySelector('.boards-grid').innerHTML = `
-                                <div class="empty-state">
-                                    <h3>You don't have any boards yet</h3>
-                                    <p>Organize your saved items by creating boards</p>
-                                    <a href="{% url 'create_board' %}" class="create-board-btn primary">
-                                        <i class="fas fa-plus"></i> Create Your First Board
-                                    </a>
-                                </div>
-                            `;
-                        }
-                    } else {
-                        alert('Error deleting board');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error deleting board');
-                });
-            }
-        });
+  .wishlist-header {
+    text-align: center;
+    margin: 32px 0;
+  }
+
+  .wishlist-header h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  .products-grid {
+    columns: 236px;
+    column-gap: 16px;
+    margin: 24px 0;
+  }
+
+  .product-pin {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 16px;
+    break-inside: avoid;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease-out;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .product-pin:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .product-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-pin:hover .product-overlay {
+    opacity: 1;
+  }
+
+  .product-info {
+    padding: 16px;
+  }
+
+  .product-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .product-brand {
+    font-size: 14px;
+    color: #767676;
+    font-weight: 500;
+  }
+
+  .product-brand i {
+    margin-right: 4px;
+  }
+
+  .save-button {
+    background: #e60023;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease-out;
+    width: 100%;
+    max-width: 200px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .save-button:hover {
+    background: #ad081b;
+    transform: scale(1.05);
+  }
+
+  .save-button.saved {
+    background: #111;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 64px 16px;
+    color: #767676;
+    grid-column: 1 / -1;
+  }
+
+  .empty-state i {
+    font-size: 64px;
+    margin-bottom: 24px;
+    color: #dadada;
+  }
+
+  @media (max-width: 768px) {
+    .products-grid {
+      columns: 2;
+      column-gap: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .products-grid {
+      columns: 1;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Make board cards clickable
+    document.querySelectorAll(".product-pin").forEach((card) => {
+      card.addEventListener("click", function (e) {
+        if (!e.target.closest(".save-button")) {
+          window.location.href = `/boards/${this.dataset.boardId}/`;
+        }
+      });
     });
-});
+  });
+
+  function deleteBoard(boardId, button) {
+    if (!confirm("Are you sure you want to delete this board?")) {
+      return;
+    }
+
+    const boardCard = button.closest(".product-pin");
+
+    fetch(`/boards/${boardId}/delete/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Remove the board card with a fade out animation
+          boardCard.style.opacity = "0";
+          boardCard.style.transform = "scale(0.95)";
+
+          setTimeout(() => {
+            boardCard.remove();
+
+            // Check if there are any boards left
+            const remainingBoards = document.querySelectorAll(".product-pin");
+            if (remainingBoards.length === 0) {
+              // Show empty state
+              document.querySelector(".products-grid").innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard"></i>
+                            <h3>You don't have any boards yet</h3>
+                            <p>Organize your saved items by creating boards</p>
+                            <a href="{% url 'create_board' %}" class="save-button" style="max-width: 200px; margin: 20px auto;">
+                                <i class="fas fa-plus"></i> Create Your First Board
+                            </a>
+                        </div>
+                    `;
+            }
+          }, 300);
+        } else {
+          alert("Error deleting board");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Error deleting board");
+      });
+  }
 </script>
 {% endblock %}

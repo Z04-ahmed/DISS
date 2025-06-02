@@ -10,5 +10,8 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', views.brand_dashboard, name='brand_dashboard'),
-    path('products/add/', views.add_product, name='add_product'),
+    path('add/', views.add_product, name='add_product'),
+    path('<int:product_id>/view/', views.view_product, name='view_product'),
+    path('<int:product_id>/edit/', views.edit_product, name='edit_product'),
+    path('<int:product_id>/delete/', views.delete_product, name='delete_product'),
 ]
