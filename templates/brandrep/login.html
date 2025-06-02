@@ -4,16 +4,6 @@
 <div class="brand-auth-form">
     <h2>Brand Representative Login</h2>
 
-    {% if messages %}
-    <div class="auth-messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <form method="POST" action="{% url 'brand_rep_login' %}">
         {% csrf_token %}
 
