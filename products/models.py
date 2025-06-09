@@ -16,12 +16,31 @@ class Brand(models.Model):
         return self.name
 
 class Product(models.Model):
+    COLOR_CHOICES = [
+        ('red', 'Red'),
+        ('blue', 'Blue'),
+        ('green', 'Green'),
+        ('yellow', 'Yellow'),
+        ('black', 'Black'),
+        ('white', 'White'),
+        ('purple', 'Purple'),
+        ('pink', 'Pink'),
+        ('orange', 'Orange'),
+        ('brown', 'Brown'),
+        ('gray', 'Gray'),
+        ('navy', 'Navy'),
+        ('beige', 'Beige'),
+        ('gold', 'Gold'),
+        ('silver', 'Silver'),
+    ]
+
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='products/')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True)
+    color = models.CharField(max_length=50, choices=COLOR_CHOICES, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     wishlist_users = models.ManyToManyField(User, related_name='wishlist')
     is_trending = models.BooleanField(default=False)

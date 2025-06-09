@@ -46,6 +46,11 @@
       </div>
 
       <div class="detail-section">
+        <h3>Color</h3>
+        <p>{{ product.get_color_display|default:"Not specified" }}</p>
+      </div>
+
+      <div class="detail-section">
         <h3>Description</h3>
         <p>{{ product.description|linebreaksbr }}</p>
       </div>

@@ -10,7 +10,7 @@ class UserAdmin(DjangoUserAdmin):
     list_display = ('email', 'full_name', 'user_type', 'is_staff')
     search_fields = ('email', 'full_name')
 
-    # Redefine which fields show up on the “change” page
+    # Redefine which fields show up on the "change" page
     fieldsets = (
         (None,               {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': ('full_name', 'user_type')}),
@@ -36,5 +36,6 @@ class UserAdmin(DjangoUserAdmin):
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('user',)
-    filter_horizontal = ('boards', 'wishlist', 'cart', 'saved_items')
+    search_fields = ('user__email', 'user__full_name')
+    filter_horizontal = ('wishlist', 'saved_items', 'boards')
 

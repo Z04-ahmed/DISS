@@ -2,266 +2,382 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <title>{% block title %}Klozit{% endblock %}</title>
 
     <style>
-        /* Make footer stick to bottom */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
+      /* Make footer stick to bottom */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
 
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
 
-        main {
-            flex: 1;
-        }
+      main {
+        flex: 1;
+      }
 
-        /* Pinterest-style Navigation with Red Theme */
-        .main-nav {
-            background: #e60023;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
-        }
+      /* Pinterest-style Navigation with Red Theme */
+      .main-nav {
+        background: #e60023;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+      }
 
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .logo {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen-Sans, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
+          "Helvetica Neue", Helvetica, "ヒラギノ角ゴ Pro W3",
+          "Hiragino Kaku Gothic Pro", メイリオ, Meiryo, "ＭＳ Ｐゴシック", Arial,
+          sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        font-size: 32px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -1.2px;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-link {
+        text-decoration: none;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen-Sans, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        padding: 12px 16px;
+        border-radius: 24px;
+        transition: all 0.15s ease-out;
+        position: relative;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .nav-link:hover {
+        background-color: rgba(0, 0, 0, 0.06);
+      }
+
+      .nav-link.active {
+        background-color: rgba(0, 0, 0, 0.15);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+      }
+
+      .profile-link {
+        background-color: white;
+        color: #111 !important;
+        font-weight: 600;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .profile-link:hover {
+        background-color: #f1f1f1;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+      }
+
+      .profile-link i {
+        font-size: 14px;
+      }
+
+      /* Pinterest-style Footer with Red Theme */
+      .main-footer {
+        background-color: #efefef;
+        border-top: 1px solid #dadada;
+        color: #333;
+        text-align: center;
+        padding: 24px 16px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen-Sans, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+        margin-top: auto;
+      }
+
+      .main-footer p {
+        font-size: 14px;
+        font-weight: 400;
+        color: #767676;
+        margin: 0;
+      }
+
+      .footer-login-link {
+        color: #e60023;
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 16px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: all 0.15s ease-out;
+        background-color: transparent;
+      }
+
+      .footer-login-link:hover {
+        background-color: rgba(230, 0, 35, 0.06);
+      }
+
+      /* Responsive Design - Pinterest style */
+      @media (max-width: 768px) {
         .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
+          padding: 8px 16px;
         }
 
         .logo {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", メイリオ, Meiryo, "ＭＳ Ｐゴシック", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            font-size: 32px;
-            font-weight: 700;
-            color: white;
-            letter-spacing: -1.2px;
-            margin: 0;
+          font-size: 28px;
         }
 
         .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+          gap: 4px;
         }
 
         .nav-link {
-            text-decoration: none;
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-weight: 600;
-            font-size: 16px;
-            padding: 12px 16px;
-            border-radius: 24px;
-            transition: all 0.15s ease-out;
-            position: relative;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-link:hover {
-            background-color: rgba(0, 0, 0, 0.06);
-        }
-
-        .nav-link.active {
-            background-color: rgba(0, 0, 0, 0.15);
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+          padding: 8px 12px;
+          font-size: 14px;
+          min-height: 40px;
         }
 
         .profile-link {
-            background-color: white;
-            color: #111 !important;
-            font-weight: 600;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+          padding: 8px 12px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .nav-container {
+          flex-direction: column;
+          gap: 16px;
+          padding: 12px 16px;
         }
 
-        .profile-link:hover {
-            background-color: #f1f1f1;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+        .nav-links {
+          width: 100%;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 8px;
         }
 
-        .profile-link i {
-            font-size: 14px;
+        .nav-link {
+          flex: 1;
+          min-width: calc(50% - 4px);
+          text-align: center;
         }
 
-        /* Pinterest-style Footer with Red Theme */
+        .profile-link {
+          width: 100%;
+          justify-content: center;
+        }
+
         .main-footer {
-            background-color: #efefef;
-            border-top: 1px solid #dadada;
-            color: #333;
-            text-align: center;
-            padding: 24px 16px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            margin-top: auto;
-        }
-
-        .main-footer p {
-            font-size: 14px;
-            font-weight: 400;
-            color: #767676;
-            margin: 0;
+          padding: 32px 16px;
         }
 
         .footer-login-link {
-            color: #e60023;
-            text-decoration: none;
-            font-weight: 600;
-            margin-left: 16px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            transition: all 0.15s ease-out;
-            background-color: transparent;
+          display: block;
+          margin: 16px auto 0;
+          width: fit-content;
         }
+      }
 
-        .footer-login-link:hover {
-            background-color: rgba(230, 0, 35, 0.06);
+      /* Clean Pinterest-style focus states */
+      .nav-link:focus,
+      .footer-login-link:focus {
+        outline: 2px solid #0074e4;
+        outline-offset: 2px;
+      }
+
+      /* Subtle animation for nav appearance */
+      .main-nav {
+        animation: slideDown 0.3s ease-out;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translateY(-100%);
         }
-
-        /* Responsive Design - Pinterest style */
-        @media (max-width: 768px) {
-            .nav-container {
-                padding: 8px 16px;
-            }
-
-            .logo {
-                font-size: 28px;
-            }
-
-            .nav-links {
-                gap: 4px;
-            }
-
-            .nav-link {
-                padding: 8px 12px;
-                font-size: 14px;
-                min-height: 40px;
-            }
-
-            .profile-link {
-                padding: 8px 12px;
-            }
+        to {
+          transform: translateY(0);
         }
+      }
 
-        @media (max-width: 640px) {
-            .nav-container {
-                flex-direction: column;
-                gap: 16px;
-                padding: 12px 16px;
-            }
+      /* Notification Styles */
+      .notification-bell {
+        position: relative;
+        padding: 12px;
+      }
 
-            .nav-links {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
+      .notification-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #e60023;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-            .nav-link {
-                flex: 1;
-                min-width: calc(50% - 4px);
-                text-align: center;
-            }
-
-            .profile-link {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .main-footer {
-                padding: 32px 16px;
-            }
-
-            .footer-login-link {
-                display: block;
-                margin: 16px auto 0;
-                width: fit-content;
-            }
+      @media (max-width: 768px) {
+        .notification-bell {
+          padding: 8px;
         }
-
-        /* Clean Pinterest-style focus states */
-        .nav-link:focus,
-        .footer-login-link:focus {
-            outline: 2px solid #0074e4;
-            outline-offset: 2px;
-        }
-
-        /* Subtle animation for nav appearance */
-        .main-nav {
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-100%);
-            }
-            to {
-                transform: translateY(0);
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navigation Bar -->
     <nav class="main-nav">
-        <div class="nav-container">
-            <h1 class="logo">KLOZIT</h1>
-            <div class="nav-links">
-                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a>
-                <a href="{% url 'product_list' %}" class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}">SHOP</a>
-                <a href="{% url 'boards' %}" class="nav-link {% if request.resolver_match.url_name == 'boards' %}active{% endif %}">BOARDS</a>
-                <a href="{% url 'favourites' %}" class="nav-link {% if request.resolver_match.url_name == 'favourites' %}active{% endif %}">FAVOURITES</a>
-{#                <a href="{% url 'cart' %}" class="nav-link {% if request.resolver_match.url_name == 'cart' %}active{% endif %}">CART</a>#}
-                <!-- Profile Link -->
-                <a href="{% if user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}?next={{ request.path }}{% endif %}"
-                   class="nav-link profile-link">
-                    <i class="fas fa-user"></i>
-                    {% if user.is_authenticated %}PROFILE{% else %}SIGN IN{% endif %}
-                </a>
-            </div>
+      <div class="nav-container">
+        <h1 class="logo">KLOZIT</h1>
+        <div class="nav-links">
+          <a
+            href="{% url 'home' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+            >HOME</a
+          >
+          <a
+            href="{% url 'product_list' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}"
+            >SHOP</a
+          >
+          <a
+            href="{% url 'boards' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'boards' %}active{% endif %}"
+            >BOARDS</a
+          >
+          <a
+            href="{% url 'favourites' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'favourites' %}active{% endif %}"
+            >FAVOURITES</a
+          >
+          {% if user.is_authenticated %}
+          <a
+            href="{% url 'notifications' %}"
+            class="nav-link notification-bell"
+            id="notificationBell"
+          >
+            <i class="fas fa-bell"></i>
+            <span
+              class="notification-badge"
+              id="notificationBadge"
+              style="display: none"
+              >0</span
+            >
+          </a>
+          {% endif %}
+          <!-- Profile Link -->
+          <a
+            href="{% if user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}?next={{ request.path }}{% endif %}"
+            class="nav-link profile-link"
+          >
+            <i class="fas fa-user"></i>
+            {% if user.is_authenticated %}PROFILE{% else %}SIGN IN{% endif %}
+          </a>
         </div>
+      </div>
     </nav>
 
     <!-- Main Content Block -->
     <main>
-        {% block content %}
-        <!-- Child templates will override this block -->
-        {% endblock %}
+      {% block content %}
+      <!-- Child templates will override this block -->
+      {% endblock %}
     </main>
 
     <!-- Footer -->
     <footer class="main-footer">
-        <p>&copy; 2025 Klozit. All rights reserved.
-            <a href="{% if user.is_authenticated %}{% url 'brand_dashboard' %}{% else %}{% url 'brand_rep_login' %}?next={{ request.path }}{% endif %}" class="footer-login-link">
-                {% if user.is_authenticated %}Brand Dashboard{% else %}Sign In as brand{% endif %}
-            </a>
-        </p>
+      <p>
+        &copy; 2025 Klozit. All rights reserved.
+        <a
+          href="{% if user.is_authenticated %}{% url 'brand_dashboard' %}{% else %}{% url 'brand_rep_login' %}?next={{ request.path }}{% endif %}"
+          class="footer-login-link"
+        >
+          {% if user.is_authenticated %}Brand Dashboard{% else %}Sign In as
+          brand{% endif %}
+        </a>
+        <a href="{% url 'help' %}" class="footer-login-link">Help</a>
+      </p>
     </footer>
 
     <!-- Optional JavaScript Block -->
     {% block scripts %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const notificationBadge = document.getElementById("notificationBadge");
+
+        if (notificationBadge) {
+          function updateNotificationCount() {
+            fetch("{% url 'get_notifications' %}")
+              .then((response) => response.json())
+              .then((data) => {
+                const unreadCount = data.notifications.filter(
+                  (n) => !n.is_read
+                ).length;
+                if (unreadCount > 0) {
+                  notificationBadge.textContent = unreadCount;
+                  notificationBadge.style.display = "flex";
+                } else {
+                  notificationBadge.style.display = "none";
+                }
+              })
+              .catch((error) => {
+                console.error("Error fetching notifications:", error);
+                notificationBadge.style.display = "none";
+              });
+          }
+
+          // Check for new notifications every minute
+          setInterval(updateNotificationCount, 60000);
+
+          // Initial load
+          updateNotificationCount();
+
+          // Listen for custom event when notifications are marked as read
+          document.addEventListener(
+            "notificationsUpdated",
+            updateNotificationCount
+          );
+        }
+      });
+    </script>
     {% endblock %}
-</body>
+  </body>
 </html>

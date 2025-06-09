@@ -17,7 +17,7 @@
                 <input type="hidden" name="q" value="{{ request.GET.q }}">
 
                 <div class="filter-group">
-                    <label>Price Range (₦)</label>
+                    <label>Price Range (£)</label>
                     <div class="price-inputs">
                         <input type="number" name="min_price" class="search-input" placeholder="Min" value="{{ request.GET.min_price }}">
                         <input type="number" name="max_price" class="search-input" placeholder="Max" value="{{ request.GET.max_price }}">
@@ -48,6 +48,28 @@
                     </select>
                 </div>
 
+                <div class="filter-group">
+                    <label>Color</label>
+                    <select name="color" class="search-input">
+                        <option value="">All Colors</option>
+                        <option value="red" {% if request.GET.color == 'red' %}selected{% endif %}>Red</option>
+                        <option value="blue" {% if request.GET.color == 'blue' %}selected{% endif %}>Blue</option>
+                        <option value="green" {% if request.GET.color == 'green' %}selected{% endif %}>Green</option>
+                        <option value="yellow" {% if request.GET.color == 'yellow' %}selected{% endif %}>Yellow</option>
+                        <option value="black" {% if request.GET.color == 'black' %}selected{% endif %}>Black</option>
+                        <option value="white" {% if request.GET.color == 'white' %}selected{% endif %}>White</option>
+                        <option value="purple" {% if request.GET.color == 'purple' %}selected{% endif %}>Purple</option>
+                        <option value="pink" {% if request.GET.color == 'pink' %}selected{% endif %}>Pink</option>
+                        <option value="orange" {% if request.GET.color == 'orange' %}selected{% endif %}>Orange</option>
+                        <option value="brown" {% if request.GET.color == 'brown' %}selected{% endif %}>Brown</option>
+                        <option value="gray" {% if request.GET.color == 'gray' %}selected{% endif %}>Gray</option>
+                        <option value="navy" {% if request.GET.color == 'navy' %}selected{% endif %}>Navy</option>
+                        <option value="beige" {% if request.GET.color == 'beige' %}selected{% endif %}>Beige</option>
+                        <option value="gold" {% if request.GET.color == 'gold' %}selected{% endif %}>Gold</option>
+                        <option value="silver" {% if request.GET.color == 'silver' %}selected{% endif %}>Silver</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="save-button">Apply Filters</button>
                 <a href="{% url 'product_list' %}" class="clear-filters">Clear All</a>
             </form>
@@ -74,7 +96,7 @@
                     </div>
 
                     <div class="product-info">
-                        <div class="product-price">₦{{ product.price }}</div>
+                        <div class="product-price">£{{ product.price }}</div>
                         <div class="product-title">{{ product.title }}</div>
                         <div class="product-brand">{{ product.brand|default:"Klozit" }}</div>
                     </div>

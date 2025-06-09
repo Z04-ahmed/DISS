@@ -55,13 +55,12 @@ class User(AbstractUser):
 
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    boards = models.ManyToManyField('boards.Board', related_name='customers', blank=True)
     wishlist = models.ManyToManyField('products.Product', related_name='wishlisted_by', blank=True)
-    cart = models.ManyToManyField('products.Product', related_name='cart_users', blank=True)
-    saved_items = models.ManyToManyField('products.Product', related_name='saved_items', blank=True)
+    saved_items = models.ManyToManyField('products.Product', related_name='saved_by', blank=True)
+    boards = models.ManyToManyField('boards.Board', related_name='customers', blank=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.email
 
 
 class ProductView(models.Model):
@@ -81,5 +80,27 @@ class SearchHistory(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('new_product', 'New Product'),
+        ('price_drop', 'Price Drop'),
+        ('back_in_stock', 'Back in Stock'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    link = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.type} - {self.user.email}"
 
 

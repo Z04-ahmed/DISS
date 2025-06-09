@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 
-from accounts.models import Customer, SearchHistory
+from accounts.models import Customer, SearchHistory, Notification
 from products.models import Category, Product
 from lib.recommendations import RecommendationEngine
 
@@ -219,3 +219,44 @@ def remove_from_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     request.user.customer.wishlist.remove(product)
     return redirect('favourites')
+
+@login_required
+def get_notifications(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return JsonResponse({
+        'notifications': [
+            {
+                'id': n.id,
+                'title': n.title,
+                'message': n.message,
+                'link': n.link,
+                'created_at': n.created_at.isoformat(),
+                'is_read': n.is_read
+            } for n in notifications
+        ]
+    })
+
+@login_required
+def mark_notification_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'status': 'success'})
+    except Notification.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Notification not found'}, status=404)
+
+@login_required
+def mark_all_notifications_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'status': 'success'})
+
+@login_required
+def notifications_page(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'accounts/notifications.html', {
+        'notifications': notifications
+    })
+
+def help_page(request):
+    return render(request, 'accounts/help.html')

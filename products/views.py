@@ -2,8 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Count
-from accounts.models import Customer, User, SearchHistory
+from django.db.models import Count, Q
+from accounts.models import Customer, User, SearchHistory, Notification
 from boards.models import Board
 from .models import Brand, BrandRepresentative, Category, Product
 from django.contrib.auth.hashers import make_password
@@ -18,6 +18,7 @@ def product_list(request):
     search_query = request.GET.get('q')
     category = request.GET.get('category')
     brand = request.GET.get('brand')
+    color = request.GET.get('color')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     sort_by = request.GET.get('sort', 'title')  # e.g., 'price', '-price'
@@ -42,6 +43,9 @@ def product_list(request):
         else:
             products = products.filter(brand__name__iexact=brand)
 
+    if color:
+        products = products.filter(color__iexact=color)
+
     try:
         if min_price:
             products = products.filter(price__gte=float(min_price))
@@ -52,6 +56,9 @@ def product_list(request):
 
     if sort_by in ['price', '-price', 'title', '-title', 'created_at', '-created_at']:
         products = products.order_by(sort_by)
+
+    # Get colors from model choices
+    colors = [choice[0] for choice in Product.COLOR_CHOICES]
 
     # Pagination
     paginator = Paginator(products, 12)
@@ -74,10 +81,12 @@ def product_list(request):
         'wishlist_ids': wishlist_ids,
         'categories': Category.objects.all(),
         'brands': Brand.objects.all(),
+        'colors': colors,
         'description': "Discover our curated collection of fashion items",
         'search_query': search_query,
         'selected_category': category,
         'selected_brand': brand,
+        'selected_color': color,
         'min_price': min_price,
         'max_price': max_price,
         'sort_by': sort_by,
@@ -107,6 +116,7 @@ def create_product(request):
         price = request.POST.get('price')
         category_id = request.POST.get('category')
         image = request.FILES.get('image')
+        color = request.POST.get('color')
 
         category = Category.objects.get(pk=category_id) if category_id else None
 
@@ -115,7 +125,8 @@ def create_product(request):
             description=description,
             price=price,
             category=category,
-            image=image
+            image=image,
+            color=color
         )
 
         return redirect('product_list')
@@ -226,6 +237,7 @@ def add_product(request):
             price = request.POST.get('price')
             image = request.FILES.get('image')
             category_id = request.POST.get('category')
+            color = request.POST.get('color')
 
             # Basic validation
             if not all([title, price, category_id]):
@@ -234,14 +246,27 @@ def add_product(request):
 
             try:
                 category = Category.objects.get(id=category_id)
-                Product.objects.create(
+                product = Product.objects.create(
                     title=title,
                     description=description,
                     price=price,
                     image=image,
                     category=category,
-                    brand=brand_rep.brand
+                    brand=brand_rep.brand,
+                    color=color
                 )
+
+                # Create notifications for all customers
+                customers = User.objects.filter(customer__isnull=False).exclude(id=request.user.id)
+                for user in customers:
+                    Notification.objects.create(
+                        user=user,
+                        type='new_product',
+                        title='New Product Available',
+                        message=f'{product.title} is now available!',
+                        link=f'/products/{product.id}/'
+                    )
+
                 messages.success(request, 'Product added successfully!', extra_tags='add_product')
                 return redirect('brand_dashboard')
             except Exception as e:
@@ -280,12 +305,14 @@ def edit_product(request, product_id):
             price = request.POST.get('price')
             category_id = request.POST.get('category')
             image = request.FILES.get('image')
+            color = request.POST.get('color')
             
             if title and description and price and category_id:
                 product.title = title
                 product.description = description
                 product.price = price
                 product.category_id = category_id
+                product.color = color
                 if image:
                     product.image = image
                 product.save()

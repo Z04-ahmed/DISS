@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from .models import Board, BoardItem
 from products.models import Product
 from accounts.models import Customer
+import json
 
 
 @login_required
@@ -89,3 +91,34 @@ def add_product_to_board(request):
 			return redirect('board_detail', pk=board_id)
 
 	return redirect('home')
+
+
+@login_required
+def edit_board(request, board_id):
+	board = get_object_or_404(Board, id=board_id, customer=request.user.customer)
+	
+	if request.method == 'GET':
+		return JsonResponse({
+			'success': True,
+			'board': {
+				'name': board.name,
+				'description': board.description
+			}
+		})
+	
+	elif request.method == 'POST':
+		try:
+			data = json.loads(request.body)
+			board.name = data.get('name')
+			board.description = data.get('description', '')
+			board.save()
+			
+			return JsonResponse({
+				'success': True,
+				'message': 'Board updated successfully'
+			})
+		except Exception as e:
+			return JsonResponse({
+				'success': False,
+				'message': str(e)
+			}, status=400)
